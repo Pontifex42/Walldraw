@@ -133,23 +133,41 @@ void ExecuteStep_r(int direction)
 	lastStepTime_r = micros();
 }
 
+
 void MoveBothSteppers(int l, int r)
 {
 	long steps_abs_l = abs(l);
 	long steps_abs_r = abs(r);
 	long over = 0;
 
-	for (long i = 0; i < steps_abs_l; ++i)
+	if (steps_abs_l > steps_abs_r)
 	{
-		ExecuteStep_l(l < 0 ? ReelInL : ReelOutL);
-		over += steps_abs_r;
-		while (over >= steps_abs_l)
+		for (long i = 0; i < steps_abs_l; ++i)
 		{
-			over -= steps_abs_l;
+			ExecuteStep_l(l < 0 ? ReelInL : ReelOutL);
+			over += steps_abs_r;
+			if (over >= steps_abs_l)
+			{
+				over -= steps_abs_l;
+				ExecuteStep_r(r < 0 ? ReelInR : ReelOutR);
+			}
+		}
+	}
+	else
+	{
+		for (long i = 0; i < steps_abs_r; ++i)
+		{
 			ExecuteStep_r(r < 0 ? ReelInR : ReelOutR);
+			over += steps_abs_l;
+			if (over >= steps_abs_r)
+			{
+				over -= steps_abs_r;
+				ExecuteStep_l(l < 0 ? ReelInL : ReelOutL);
+			}
 		}
 	}
 }
+
 
 void DeactivateStepper()
 {
